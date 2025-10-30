@@ -1,0 +1,230 @@
+grammar br.edu.unijui.gca.jabuti.Jabuti with org.eclipse.xtext.common.Terminals
+
+import "http://www.edu.br/unijui/gca/jabuti/Jabuti"
+
+Model:
+	imports+=Import*
+	contract=Contract;
+
+Import:
+    'import' importedNamespace=QualifiedNameWithWildcard
+;
+	
+// #################### CONTRACT STRUCTURE ####################
+
+Contract: 
+	"contract" name=ID '{'
+	
+		'dates' '{'
+			'beginDate' '=' beginDate=STRING
+			'dueDate' '=' dueDate=STRING
+		'}'
+			
+		'parties' '{'
+			application=Application
+			process=Process
+		'}'
+
+		('variables' '{'
+			variables+=Variable*
+		'}')?
+		
+		'clauses' '{'
+			clauses+=Clause*
+		'}'		
+				
+	'}'; 
+		
+Clause: 
+	(Right | Obligation | Prohibition)  '{'
+		'rolePlayer' '=' rolePlayer=RolePlayer
+		'operation' '=' operation=Operation
+		'terms' '{' 
+			terms = ExpressionTerm			
+		'}'
+		onSuccess=OnSuccess?
+		onBreach=OnBreach?		
+	'}' 
+;
+
+Right:
+	'right' name=ID 
+;
+Obligation:
+	'obligation' name=ID 
+;
+Prohibition:
+	'prohibition' name=ID 
+;	
+
+
+// #################### PARTY AND SUBTYPES ####################
+
+Party: 
+	(Application | Process) 
+;
+
+Application:
+	'application' '=' name=STRING
+;
+
+Process:
+	'process' '=' name=STRING
+;
+
+
+// #################### EventLog onBreach and onSuccess ####################
+
+
+EventLog:
+	OnSuccess | OnBreach
+;
+
+OnSuccess:
+	'onSuccess' '(' 'log(' message=STRING ')' ')' 
+;
+
+OnBreach:
+	 'onBreach' '(' 'log(' message=STRING ')' ')' 
+;
+
+// #################### EXPRESSION GROUP - CLASSES AND SUBCLASSES ####################
+
+Expression:
+	Negation ({BinaryOperator.left=current} (symbol='AND' | symbol='OR'  ) right=Negation)*
+;
+
+Negation returns Expression:
+	Comparison | {UnaryOperator} symbol='!' expression=Comparison;
+
+
+Comparison returns Expression:
+	Plus ({BinaryOperator.left=current} (symbol='<=' | symbol='>=' | symbol='>' | symbol='<' | symbol='!='
+	| symbol='==') right=Plus)*;
+
+Plus returns Expression:
+	Factor ({BinaryOperator.left=current} (symbol='+' | symbol='-') right=Factor)*;
+
+Factor returns Expression:
+	Negative ({BinaryOperator.left=current} (symbol='*' | symbol='/') right=Negative)*;
+
+Negative returns Expression:
+	Primary | {UnaryOperator} symbol='-' expression=Primary;
+
+Primary returns Expression:
+	LiteralValue | ParenthesizedExpression ;
+
+ParenthesizedExpression: 
+	"(" expression=Expression ")"
+;
+
+    
+LiteralValue:
+	NumericValue | StringValue | VariableValue;
+
+NumericValue:
+	value=INT;
+
+StringValue:
+	value=STRING;	
+
+
+VariableValue:
+	value=[Variable];
+
+FunctionCall:
+	name=QualifiedName '(' params+=Expression (',' params+=Expression)* ')'
+;
+
+Variable:
+	name=ID '=' (expression=Expression | term = (SessionInterval | MessageContent | TimeInterval | Timeout )) 
+;
+
+
+//------------------ start of new version ----------------
+ 
+
+
+ExpressionTerm:
+	NegationTerm ({BinaryTermOperator.left=current} (symbol='AND' | symbol='OR'  ) right=NegationTerm)*;
+
+NegationTerm returns ExpressionTerm:
+	Term | {NegationOperator} symbol='NOT' expressionTerm=Term;
+		
+Term returns ExpressionTerm:
+	'(' ExpressionTerm ')' |  WeekDaysInterval | Timeout | TimeInterval | MessageContent | MaxNumberOfOperation |SessionInterval
+;
+
+
+//  ----------------- end new version proposal  -----------------
+
+LogicalOperator:
+	symbol=('AND'| 'OR')
+;
+
+WeekDaysInterval:
+	'WeekDaysInterval' '(' start=WeekDay 'to' end=WeekDay ')'
+;
+
+Timeout:
+	'Timeout' '(' seconds=INT ')'
+;
+
+TimeInterval: 
+	'TimeInterval' '(' start=STRING 'to' end=STRING')'
+; 
+
+MessageContent:
+	'MessageContent' '(' returnType=DataType "("(content=STRING | variable=[Variable])")"
+	(comparisonOperator=ComparisonOperator expression=Expression (perTime=TimeUnitSpec)?)?  ')' 	
+;
+
+MaxNumberOfOperation:
+	'MaxNumberOfOperation' '(' operationsNumber=INT (perTime=TimeUnitSpec)?  ')'
+;
+
+SessionInterval: 
+	'SessionInterval' '('frequency=INT timeUnit=TimeUnit ('per' ( messageContent = MessageContent | value=STRING | variable=[Variable] ) )? ')'
+; 
+
+	
+TimeUnitSpec:
+    'per' timeUnit=TimeUnit
+;	
+
+ComparisonOperator:
+	symbol='<=' | symbol='>=' | symbol='>' | symbol='<' | symbol='!='	| symbol='==' 
+;
+
+enum WeekDay:
+    SUNDAY='Sunday' | MONDAY='Monday' | TUESDAY='Tuesday' | WEDNESDAY = 'Wednesday' | THURSDAY='Thursday' | FRIDAY='Friday' | SATURDAY='Saturday'
+;
+    
+enum TimeUnit:
+    SECOND='Second' |  MINUTE='Minute' | HOUR = 'Hour' |  DAY='Day' | WEEK='Week' | MONTH='Month' | YEAR='Year'
+;
+
+
+//############################################
+//por que utilizar um qualifiedName e como ID ?
+QualifiedName:
+	ID ('.' ID)*;
+	
+QualifiedNameWithWildcard:
+	QualifiedName '.*'; 
+	
+
+enum RolePlayer:
+	APPLICATION='application' | PROCESS='process'
+;
+
+enum Operation:
+    PUSH='push' | POLL='poll' | WRITE='write' | READ = 'read' | REQUEST='request' | RESPONSE='response' 
+;
+
+
+enum DataType:
+	TEXT='text' |
+	NUMBER='number' |
+	BOOLEAN='boolean'
+;
