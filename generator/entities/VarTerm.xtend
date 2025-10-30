@@ -1,6 +1,6 @@
-package br.edu.unijui.gca.jabuti.generator.entities
+package anonymous.jabuti.generator.entities
 
-import br.edu.unijui.gca.jabuti.generator.entities.terms.TermStruct
+import anonymous.jabuti.generator.entities.terms.TermStruct
 
 class VarTerm extends StructVar {
     TermStruct term

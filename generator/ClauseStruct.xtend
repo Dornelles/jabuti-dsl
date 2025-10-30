@@ -1,8 +1,8 @@
-package br.edu.unijui.gca.jabuti.generator
+package anonymous.jabuti.generator
 
 
 import java.util.ArrayList
-import br.edu.unijui.gca.jabuti.generator.entities.terms.TermStruct
+import anonymous.jabuti.generator.entities.terms.TermStruct
 
 
 class ClauseStruct {

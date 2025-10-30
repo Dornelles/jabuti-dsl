@@ -1,4 +1,4 @@
-package br.edu.unijui.gca.jabuti.generator.entities.terms
+package anonymous.jabuti.generator.entities.terms
 
 class Timeout_S extends TermStruct{
 	int amountTime;

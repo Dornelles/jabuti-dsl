@@ -1,4 +1,4 @@
-package br.edu.unijui.gca.jabuti.generator.entities.terms
+package anonymous.jabuti.generator.entities.terms
 
 class SessionInterval_S extends TermStruct{
 	int duration;

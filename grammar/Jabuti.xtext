@@ -1,6 +1,5 @@
-grammar br.edu.unijui.gca.jabuti.Jabuti with org.eclipse.xtext.common.Terminals
+grammar anonymous.jabuti.Jabuti with org.eclipse.xtext.common.Terminals
 
-import "http://www.edu.br/unijui/gca/jabuti/Jabuti"
 
 Model:
 	imports+=Import*

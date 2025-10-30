@@ -1,4 +1,4 @@
-package br.edu.unijui.gca.jabuti.generator.entities
+package anonymous.jabuti.generator.entities
 
 
 import java.util.ArrayList

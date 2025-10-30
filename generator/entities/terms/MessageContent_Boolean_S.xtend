@@ -1,4 +1,4 @@
-package br.edu.unijui.gca.jabuti.generator.entities.terms
+package anonymous.jabuti.generator.entities.terms
 
 class MessageContent_Boolean_S extends TermStruct{
 	    String xpath
