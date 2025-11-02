@@ -1,0 +1,57 @@
+contract FlightFacade {
+
+	dates{
+		beginDate = "2021-09-23 17:00:00"
+		dueDate =   "2022-09-23 12:00:00"
+	}
+	
+	parties{
+		application =  "Flight Facade"
+		process =  "Integration Process"	
+	}
+
+	clauses{	
+		right requestRight{
+			// Setting days and times to requesting flights	
+			rolePlayer = process
+			operation = request		
+			
+			terms{		
+				WeekDaysInterval(Sunday to Saturday)AND
+				TimeInterval("06:00:00" to "22:59:00")AND
+				MaxNumberOfOperation(100 per Minute)AND
+				MessageContent(number("count(//trip/path)") == 1 )AND	
+				MessageContent(text("//origin/text()") != "//destiny/text()" ) 
+			}
+			onBreach(log("Breach of condition in the travel request"))		
+		}
+		
+		prohibition requestProhibition{
+			//Setting disallowed hours and limits of operations by time interval	
+			rolePlayer= process
+			operation =  request	
+			
+			terms{				
+				TimeInterval("00:00:00" to "05:59:00") OR			
+				MessageContent(number("//trip/text()")  > 1)
+			} 
+			onBreach(log("Request made outside of allowed hours, ..."))
+		}
+				
+				
+		obligation responseObligation{
+			//Setting the time limit for responding to a resquest	
+			rolePlayer = application
+			operation = response
+			
+			terms {				
+				Timeout(5)AND				
+				MessageContent(text("//flight/text()") != "")AND
+				MessageContent(text("//destinyResponse/text()") == "//destinyRequest/text()")AND
+				MessageContent(text("//originResponse/text()") == "//originResponse/text()")						
+			}
+			onBreach(log("The timeout exceeded or inconsistent response message"))	
+		}
+	}	
+	
+}

@@ -1,0 +1,29 @@
+contract SendMessageWhatsapp {   
+	dates{
+		beginDate = "2023-01-01 08:30:00"     
+		dueDate =  "2023-01-01 08:30:01"     			  	 
+	}	
+	
+	parties{
+		application = "Whatsapp" 
+		process = "Integration Process" 
+	}
+	
+	variables{	
+		var = "teste"				
+		session = SessionInterval(24 Hour per "//conversationId/text()")			
+		conversationStarter = MessageContent(text("//conversationStarter/text()")) 
+	}
+
+	clauses{
+		
+		right sendMessage{
+			rolePlayer = process
+			operation = write		
+			terms{
+				WeekDaysInterval(Monday to Friday)	 		 	 
+			}		
+			onBreach(log("Request operation performed outside of allowed hours or limit operation exceeded"))
+		}
+	}	
+}
